@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* LBO Model — Bloomberg Terminal Aesthetic                                   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-bg-primary: #0a0e17;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary: #1a2332;
+  --color-bg-hover: #1f2b3d;
+  --color-bg-input: #0d1422;
+  --color-border: #1e293b;
+  --color-border-focus: #3b82f6;
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-accent-green: #22c55e;
+  --color-accent-amber: #f59e0b;
+  --color-accent-red: #ef4444;
+  --color-accent-blue: #3b82f6;
+  --color-input-blue: #60a5fa;
+  --color-positive: #22c55e;
+  --color-negative: #ef4444;
+  --color-warning: #f59e0b;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Table styles ─────────────────────────────────────────────────────────── */
+
+.lbo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.lbo-table th {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 10px;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.lbo-table th:first-child {
+  text-align: left;
+}
+
+.lbo-table td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.lbo-table td:first-child {
+  text-align: left;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.lbo-table tr:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.lbo-table .row-header {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+  border-top: 2px solid var(--color-border);
+}
+
+.lbo-table .row-total {
+  font-weight: 700;
+  border-top: 2px solid var(--color-text-muted);
+  border-bottom: 3px double var(--color-text-muted);
+}
+
+/* ── Input cells (IB convention: blue font = hardcoded input) ─────────── */
+
+.cell-input {
+  color: var(--color-input-blue) !important;
+  font-weight: 500;
+}
+
+.cell-formula {
+  color: var(--color-text-primary);
+}
+
+.cell-negative {
+  color: var(--color-negative) !important;
+}
+
+.cell-positive {
+  color: var(--color-positive);
+}
+
+/* ── Inline editable input ────────────────────────────────────────────── */
+
+.inline-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--color-input-blue);
+  color: var(--color-input-blue);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: right;
+  padding: 2px 4px;
+  width: 80px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.inline-input:focus {
+  border-bottom-color: var(--color-border-focus);
+  background-color: var(--color-bg-input);
+}
+
+.inline-input:hover {
+  background-color: var(--color-bg-input);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ── Sensitivity heatmap ──────────────────────────────────────────────── */
+
+.heat-red { background-color: rgba(239, 68, 68, 0.25); color: #fca5a5; }
+.heat-amber { background-color: rgba(245, 158, 11, 0.25); color: #fcd34d; }
+.heat-green { background-color: rgba(34, 197, 94, 0.25); color: #86efac; }
+
+/* ── Section containers ───────────────────────────────────────────────── */
+
+.section-container {
+  padding: 20px 24px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  margin: 16px 0 8px 0;
+}
+
+/* ── Warning banner ───────────────────────────────────────────────────── */
+
+.warning-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.covenant-breach {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
