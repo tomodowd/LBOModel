@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useModel } from '../../context/ModelContext';
 import { InlineInput } from '../common/InlineInput';
 import { computeModel } from '../../lib/lbo-engine';
-import type { Currency } from '../../lib/types';
+import type { Currency, DealType } from '../../lib/types';
 
 export function DealOverview() {
   const { model, outputs, dispatch } = useModel();
@@ -76,6 +76,17 @@ export function DealOverview() {
               >
                 {model.circularDebtSchedule ? 'ON' : 'OFF'}
               </button>
+            </InputRow>
+            <InputRow label="Deal Type">
+              <select
+                className="inline-input w-40 text-left bg-bg-input"
+                value={d.dealType}
+                onChange={e => dispatch({ type: 'SET_DEAL_TYPE', dealType: e.target.value as DealType })}
+              >
+                <option value="mid-market-bsl">Mid-Market BSL</option>
+                <option value="large-cap-bsl">Large-Cap BSL</option>
+                <option value="direct-lending">Direct Lending</option>
+              </select>
             </InputRow>
           </div>
         </div>

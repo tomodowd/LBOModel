@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useReducer, useMemo } from 'react';
-import type { LBOModel, LBOModelOutputs, Section, DebtTranche, Covenant, YearlyOverrides } from '../lib/types';
+import type { LBOModel, LBOModelOutputs, Section, DebtTranche, Covenant, YearlyOverrides, DealType } from '../lib/types';
 import { computeModel } from '../lib/lbo-engine';
 import { defaultModel } from '../lib/defaults';
+import { generatePresetTranches, resetToMarketRates } from '../lib/deal-presets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Actions
@@ -17,6 +18,9 @@ type Action =
   | { type: 'ADD_COVENANT'; covenant: Covenant }
   | { type: 'REMOVE_COVENANT'; covenantId: string }
   | { type: 'SET_CIRCULAR'; value: boolean }
+  | { type: 'SET_DEAL_TYPE'; dealType: DealType }
+  | { type: 'APPLY_DEAL_PRESET' }
+  | { type: 'RESET_MARKET_RATES' }
   | { type: 'SET_SECTION'; section: Section }
   | { type: 'RESET_MODEL' };
 
@@ -44,6 +48,11 @@ function reducer(state: State, action: Action): State {
       }
       if (action.field === 'equityPct') {
         deal.debtPct = 100 - (action.value as number);
+        // Auto-regenerate tranches when leverage changes (if deal type is set)
+        if (deal.dealType) {
+          const newTranches = generatePresetTranches(deal.dealType, deal.debtPct);
+          return { ...state, model: { ...state.model, deal, debtTranches: newTranches } };
+        }
       }
       if (action.field === 'debtPct') {
         deal.equityPct = 100 - (action.value as number);
@@ -55,9 +64,18 @@ function reducer(state: State, action: Action): State {
     }
 
     case 'SET_DEBT_TRANCHE': {
-      const debtTranches = state.model.debtTranches.map(t =>
-        t.id === action.trancheId ? { ...t, [action.field]: action.value } : t
-      );
+      const debtTranches = state.model.debtTranches.map(t => {
+        if (t.id !== action.trancheId) return t;
+        const updated = { ...t, [action.field]: action.value };
+        // Auto-toggle amount mode based on which field was edited
+        if (action.field === 'amount') {
+          updated.amountAsPctOfEV = false;
+        }
+        if (action.field === 'amountPct') {
+          updated.amountAsPctOfEV = true;
+        }
+        return updated;
+      });
       return { ...state, model: { ...state.model, debtTranches } };
     }
 
@@ -114,6 +132,23 @@ function reducer(state: State, action: Action): State {
 
     case 'SET_CIRCULAR':
       return { ...state, model: { ...state.model, circularDebtSchedule: action.value } };
+
+    case 'SET_DEAL_TYPE': {
+      const deal = { ...state.model.deal, dealType: action.dealType };
+      const newTranches = generatePresetTranches(action.dealType, deal.debtPct);
+      return { ...state, model: { ...state.model, deal, debtTranches: newTranches } };
+    }
+
+    case 'APPLY_DEAL_PRESET': {
+      const { deal } = state.model;
+      const newTranches = generatePresetTranches(deal.dealType, deal.debtPct);
+      return { ...state, model: { ...state.model, debtTranches: newTranches } };
+    }
+
+    case 'RESET_MARKET_RATES': {
+      const updatedTranches = resetToMarketRates(state.model.debtTranches);
+      return { ...state, model: { ...state.model, debtTranches: updatedTranches } };
+    }
 
     case 'SET_SECTION':
       return { ...state, activeSection: action.section };

@@ -1,52 +1,5 @@
-import type { LBOModel, DebtTranche, Covenant } from './types';
-
-const defaultTranches: DebtTranche[] = [
-  {
-    id: 'tla',
-    name: 'Senior Term Loan A',
-    amount: 120,
-    amountAsPctOfEV: false,
-    amountPct: 0,
-    rateType: 'floating',
-    fixedRate: 0,
-    floatingSpread: 350,    // bps
-    baseRate: 4.5,           // SONIA
-    amortisationPct: 5,      // 5% annual
-    cashSweepPct: 0,
-    isPIK: false,
-    tenor: 5,
-  },
-  {
-    id: 'tlb',
-    name: 'Senior Term Loan B',
-    amount: 90,
-    amountAsPctOfEV: false,
-    amountPct: 0,
-    rateType: 'floating',
-    fixedRate: 0,
-    floatingSpread: 425,
-    baseRate: 4.5,
-    amortisationPct: 1,
-    cashSweepPct: 75,
-    isPIK: false,
-    tenor: 7,
-  },
-  {
-    id: 'mezz',
-    name: 'Mezzanine (PIK)',
-    amount: 25,
-    amountAsPctOfEV: false,
-    amountPct: 0,
-    rateType: 'fixed',
-    fixedRate: 10,
-    floatingSpread: 0,
-    baseRate: 0,
-    amortisationPct: 0,
-    cashSweepPct: 0,
-    isPIK: true,
-    tenor: 7,
-  },
-];
+import type { LBOModel, Covenant } from './types';
+import { generatePresetTranches } from './deal-presets';
 
 const defaultCovenants: Covenant[] = [
   {
@@ -71,6 +24,7 @@ export const defaultModel: LBOModel = {
     sector: 'Business Services',
     dealDate: '2025-06-15',
     currency: 'GBP',
+    dealType: 'mid-market-bsl',
     entryEBITDA: 45,
     entryMultiple: 9.5,
     enterpriseValue: 427.5,    // 45 × 9.5
@@ -93,7 +47,7 @@ export const defaultModel: LBOModel = {
     capexPercent: 4,
     nwcPercent: 5,
   },
-  debtTranches: defaultTranches,
+  debtTranches: generatePresetTranches('mid-market-bsl', 55),
   covenants: defaultCovenants,
   yearlyOverrides: {},
   circularDebtSchedule: true,

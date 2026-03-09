@@ -3,12 +3,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type Currency = 'GBP' | 'USD';
+export type DealType = 'mid-market-bsl' | 'large-cap-bsl' | 'direct-lending';
 
 export interface DealOverview {
   companyName: string;
   sector: string;
   dealDate: string;
   currency: Currency;
+  dealType: DealType;
   entryEBITDA: number;       // £m
   entryMultiple: number;     // x
   enterpriseValue: number;   // auto-calc: entryEBITDA × entryMultiple
@@ -48,6 +50,8 @@ export interface DebtTranche {
   cashSweepPct: number;     // 0–100% of excess cash
   isPIK: boolean;           // PIK interest toggle
   tenor: number;            // years
+  isUndrawn: boolean;       // RCF: committed but undrawn at close
+  commitmentFeePct: number; // % commitment fee for undrawn facilities
 }
 
 export interface SourcesUses {
@@ -58,13 +62,17 @@ export interface SourcesUses {
   cashToBS: number;
   totalUses: number;
   // Sources
-  debtTranches: DebtTranche[];
-  totalDebt: number;
+  debtTranches: DebtTranche[];  // drawn only
+  rcfTranches: DebtTranche[];   // committed-undrawn, shown separately
+  totalDebt: number;            // drawn only
   sponsorEquity: number;
   managementRollover: number;
   totalEquity: number;
   totalSources: number;
   isBalanced: boolean;
+  // Gap tracking
+  targetDebt: number;   // EV × debtPct — what capital structure implies
+  debtGap: number;      // targetDebt − totalDebt (positive = underlevered)
 }
 
 export interface YearlyProjection {

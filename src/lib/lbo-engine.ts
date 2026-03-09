@@ -47,18 +47,26 @@ export function computeSourcesUses(model: LBOModel): SourcesUses {
   const { deal, debtTranches } = model;
   const ev = deal.entryEBITDA * deal.entryMultiple;
 
+  // Separate drawn vs undrawn (RCF)
+  const drawnTranches = debtTranches.filter(t => !t.isUndrawn);
+  const rcfTranches = debtTranches.filter(t => t.isUndrawn);
+
   // Uses
   const purchasePrice = ev;
   const transactionFees = ev * (deal.transactionFeesPct / 100);
-  const totalDebt = debtTranches.reduce((sum, t) => sum + resolveTrancheAmount(t, ev), 0);
+  const totalDebt = drawnTranches.reduce((sum, t) => sum + resolveTrancheAmount(t, ev), 0);
   const financingFees = totalDebt * (deal.financingFeesPct / 100);
   const cashToBS = deal.cashToBS;
   const totalUses = purchasePrice + transactionFees + financingFees + cashToBS;
 
-  // Sources
+  // Sources (equity is the plug)
   const totalEquity = totalUses - totalDebt;
   const managementRollover = totalEquity * (deal.managementRolloverPct / 100);
   const sponsorEquity = totalEquity - managementRollover;
+
+  // Gap tracking
+  const targetDebt = ev * (deal.debtPct / 100);
+  const debtGap = targetDebt - totalDebt;
 
   return {
     purchasePrice,
@@ -66,13 +74,16 @@ export function computeSourcesUses(model: LBOModel): SourcesUses {
     financingFees,
     cashToBS,
     totalUses,
-    debtTranches,
+    debtTranches: drawnTranches,
+    rcfTranches,
     totalDebt,
     sponsorEquity,
     managementRollover,
     totalEquity,
     totalSources: totalDebt + totalEquity,
     isBalanced: Math.abs(totalUses - (totalDebt + totalEquity)) < 0.01,
+    targetDebt,
+    debtGap,
   };
 }
 
@@ -115,7 +126,7 @@ export function computeProjections(
   // Current debt balances (mutable during projection loop)
   const currentBalances: Record<string, number> = {};
   debtTranches.forEach(t => {
-    currentBalances[t.id] = resolveTrancheAmount(t, ev);
+    currentBalances[t.id] = t.isUndrawn ? 0 : resolveTrancheAmount(t, ev);
   });
 
   const projections: YearlyProjection[] = [];
