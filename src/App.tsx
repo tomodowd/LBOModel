@@ -1,5 +1,7 @@
-import { ModelProvider, useModel } from './context/ModelContext';
+import { ModelProvider, useModel, useScenarios } from './context/ModelContext';
 import { Sidebar } from './components/Sidebar';
+import { ScenarioBar } from './components/ScenarioBar';
+import { CompareView } from './components/CompareView';
 import { DealOverview } from './components/sections/DealOverview';
 import { SourcesUses } from './components/sections/SourcesUses';
 import { OperatingModel } from './components/sections/OperatingModel';
@@ -11,6 +13,7 @@ import { Export } from './components/sections/Export';
 
 function AppContent() {
   const { activeSection } = useModel();
+  const { compareMode } = useScenarios();
 
   const renderSection = () => {
     switch (activeSection) {
@@ -27,11 +30,14 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        {renderSection()}
-      </main>
+    <div className="flex flex-col h-screen w-screen overflow-hidden">
+      <ScenarioBar />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          {compareMode ? <CompareView /> : renderSection()}
+        </main>
+      </div>
     </div>
   );
 }

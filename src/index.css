@@ -217,3 +217,71 @@ html, body, #root {
 .covenant-breach {
   background-color: rgba(239, 68, 68, 0.15) !important;
 }
+
+/* ── Scenario bar ────────────────────────────────────────────────────── */
+
+.scenario-tab {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.scenario-tab:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
+}
+
+.scenario-tab.active {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-accent-blue);
+  border-bottom: 2px solid var(--color-accent-blue);
+  font-weight: 600;
+}
+
+.scenario-menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 50;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  min-width: 120px;
+  padding: 4px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.scenario-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.scenario-menu button:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.scenario-menu button.destructive:hover {
+  color: var(--color-accent-red);
+}
+
+/* ── Compare view ────────────────────────────────────────────────────── */
+
+.compare-best {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  font-weight: 600;
+}

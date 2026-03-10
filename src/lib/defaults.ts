@@ -1,4 +1,4 @@
-import type { LBOModel, Covenant } from './types';
+import type { LBOModel, Covenant, Scenario } from './types';
 import { generatePresetTranches } from './deal-presets';
 
 const defaultCovenants: Covenant[] = [
@@ -52,3 +52,41 @@ export const defaultModel: LBOModel = {
   yearlyOverrides: {},
   circularDebtSchedule: true,
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Default Scenarios
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function createDefaultScenarios(): Scenario[] {
+  const base: Scenario = {
+    id: 'base',
+    name: 'Base Case',
+    model: structuredClone(defaultModel),
+  };
+
+  const upsideModel = structuredClone(defaultModel);
+  upsideModel.deal.exitMultiple += 1.0;
+  upsideModel.deal.revenueCAGR += 2;
+
+  const upside: Scenario = {
+    id: 'upside',
+    name: 'Upside',
+    model: upsideModel,
+  };
+
+  const downsideModel = structuredClone(defaultModel);
+  downsideModel.deal.exitMultiple -= 1.0;
+  downsideModel.deal.revenueCAGR -= 2;
+  downsideModel.debtTranches = downsideModel.debtTranches.map(t => ({
+    ...t,
+    baseRate: t.rateType === 'floating' ? t.baseRate + 0.5 : t.baseRate,
+  }));
+
+  const downside: Scenario = {
+    id: 'downside',
+    name: 'Downside',
+    model: downsideModel,
+  };
+
+  return [base, upside, downside];
+}

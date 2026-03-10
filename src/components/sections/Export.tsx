@@ -1,9 +1,10 @@
-import { useModel } from '../../context/ModelContext';
+import { useModel, useScenarios } from '../../context/ModelContext';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 
 export function Export() {
   const { model, outputs } = useModel();
+  const { dispatch: scenarioDispatch } = useScenarios();
   const cs = model.deal.currency === 'GBP' ? '£' : '$';
 
   const exportExcel = () => {
@@ -246,6 +247,21 @@ export function Export() {
           icon="⎘"
           onClick={copyReturns}
         />
+      </div>
+
+      {/* Scenario Management */}
+      <div className="mt-8">
+        <div className="section-subtitle">Scenario Management</div>
+        <button
+          onClick={() => {
+            if (window.confirm('Reset all scenarios to defaults (Base Case, Upside, Downside)? This cannot be undone.')) {
+              scenarioDispatch({ type: 'RESET_SCENARIOS' });
+            }
+          }}
+          className="mt-2 py-2 px-4 bg-accent-red/20 border border-accent-red/40 text-accent-red text-xs font-semibold uppercase tracking-wider hover:bg-accent-red/30 transition-colors"
+        >
+          Reset All Scenarios
+        </button>
       </div>
 
       {/* Preview of what gets exported */}

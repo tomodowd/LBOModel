@@ -247,6 +247,20 @@ export interface LBOModelOutputs {
   circularIterations: number;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Scenario Management
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface Scenario {
+  id: string;
+  name: string;
+  model: LBOModel;
+}
+
+export interface ScenarioWithOutputs extends Scenario {
+  outputs: LBOModelOutputs;
+}
+
 // Navigation
 export type Section =
   | 'overview'
