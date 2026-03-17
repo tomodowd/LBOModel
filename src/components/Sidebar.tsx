@@ -21,7 +21,8 @@ export function Sidebar() {
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="text-xs font-semibold tracking-widest text-text-muted uppercase">LBO Model</div>
-        <div className="text-sm font-bold text-text-primary mt-1 truncate">{model.deal.companyName}</div>
+        <div className="text-[9px] text-text-muted mt-0.5 leading-tight">Free, investment-banking grade. SONIA benchmarks, scenario analysis, Excel export.</div>
+        <div className="text-sm font-bold text-text-primary mt-2 truncate">{model.deal.companyName}</div>
         <div className="text-xs text-text-muted mt-0.5">{model.deal.sector}</div>
       </div>
 

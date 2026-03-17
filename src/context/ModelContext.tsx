@@ -35,7 +35,8 @@ type Action =
   | { type: 'RENAME_SCENARIO'; scenarioId: string; name: string }
   | { type: 'DUPLICATE_SCENARIO'; sourceId: string; newId: string; newName: string }
   | { type: 'TOGGLE_COMPARE' }
-  | { type: 'RESET_SCENARIOS' };
+  | { type: 'RESET_SCENARIOS' }
+  | { type: 'LOAD_FROM_URL'; scenarios: Scenario[] };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State
@@ -46,6 +47,7 @@ interface State {
   activeScenarioId: string;
   activeSection: Section;
   compareMode: boolean;
+  isDemo: boolean;           // true when loaded from default demo (no saved state, no URL)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,6 +57,7 @@ interface State {
 function updateActiveModel(state: State, updater: (model: LBOModel) => LBOModel): State {
   return {
     ...state,
+    isDemo: false,       // any edit clears the demo flag
     scenarios: state.scenarios.map(s =>
       s.id === state.activeScenarioId
         ? { ...s, model: updater(s.model) }
@@ -242,6 +245,17 @@ function reducer(state: State, action: Action): State {
         scenarios: defaults,
         activeScenarioId: defaults[0].id,
         compareMode: false,
+        isDemo: false,
+      };
+    }
+
+    case 'LOAD_FROM_URL': {
+      return {
+        ...state,
+        scenarios: action.scenarios,
+        activeScenarioId: action.scenarios[0].id,
+        compareMode: false,
+        isDemo: false,
       };
     }
 
@@ -256,7 +270,42 @@ function reducer(state: State, action: Action): State {
 
 const STORAGE_KEY = 'lbo-scenarios';
 
+// ── URL state decoding ──────────────────────────────────────────────────────
+
+function decodeStateFromURL(): Scenario[] | null {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('deal');
+    if (!encoded) return null;
+    const json = atob(encoded);
+    const parsed = JSON.parse(json);
+    if (Array.isArray(parsed.scenarios) && parsed.scenarios.length > 0) {
+      return parsed.scenarios;
+    }
+    // Legacy: single model encoded
+    if (parsed.deal && parsed.debtTranches) {
+      return [{ id: 'base', name: 'Base Case', model: parsed as LBOModel }];
+    }
+  } catch {
+    // Ignore malformed URLs
+  }
+  return null;
+}
+
 function loadInitialState(): State {
+  // Priority 1: URL ?deal= param
+  const fromURL = decodeStateFromURL();
+  if (fromURL) {
+    return {
+      scenarios: fromURL,
+      activeScenarioId: fromURL[0].id,
+      activeSection: 'overview' as Section,
+      compareMode: false,
+      isDemo: false,
+    };
+  }
+
+  // Priority 2: localStorage
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -267,18 +316,22 @@ function loadInitialState(): State {
           activeScenarioId: parsed.activeScenarioId,
           activeSection: 'overview' as Section,
           compareMode: false,
+          isDemo: false,
         };
       }
     }
   } catch {
     // Ignore parse errors
   }
+
+  // Priority 3: Fresh demo deal
   const defaults = createDefaultScenarios();
   return {
     scenarios: defaults,
     activeScenarioId: defaults[0].id,
     activeSection: 'overview' as Section,
     compareMode: false,
+    isDemo: true,
   };
 }
 
@@ -297,6 +350,7 @@ interface ScenarioContextValue {
   scenarios: Scenario[];
   activeScenarioId: string;
   compareMode: boolean;
+  isDemo: boolean;
   allOutputs: ScenarioWithOutputs[];
   dispatch: React.Dispatch<Action>;
 }
@@ -326,6 +380,19 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.scenarios, state.activeScenarioId]);
 
+  // Sync state to URL (replaceState to avoid history pollution)
+  useEffect(() => {
+    try {
+      const payload = JSON.stringify({ scenarios: state.scenarios });
+      const encoded = btoa(payload);
+      const url = new URL(window.location.href);
+      url.searchParams.set('deal', encoded);
+      window.history.replaceState(null, '', url.toString());
+    } catch {
+      // Ignore encoding errors (e.g. very large state)
+    }
+  }, [state.scenarios]);
+
   // Compute all scenario outputs for compare mode
   const allOutputs = useMemo<ScenarioWithOutputs[]>(() => {
     if (!state.compareMode) return [];
@@ -350,10 +417,11 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
       scenarios: state.scenarios,
       activeScenarioId: state.activeScenarioId,
       compareMode: state.compareMode,
+      isDemo: state.isDemo,
       allOutputs,
       dispatch,
     }),
-    [state.scenarios, state.activeScenarioId, state.compareMode, allOutputs, dispatch]
+    [state.scenarios, state.activeScenarioId, state.compareMode, state.isDemo, allOutputs, dispatch]
   );
 
   return (

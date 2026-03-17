@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useScenarios } from '../context/ModelContext';
 import { defaultModel } from '../lib/defaults';
 
-export function ScenarioBar() {
+export function ScenarioBar({ headerActions }: { headerActions?: React.ReactNode }) {
   const { scenarios, activeScenarioId, compareMode, dispatch } = useScenarios();
 
   const handleAdd = () => {
@@ -59,6 +59,9 @@ export function ScenarioBar() {
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* Header action buttons (Excel export, Copy link) */}
+      {headerActions}
 
       {/* Compare toggle */}
       <button
