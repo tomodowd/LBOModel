@@ -63,7 +63,7 @@ function HeaderActions() {
         onClick={copyLink}
         className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider bg-accent-blue/15 border border-accent-blue/40 text-accent-blue hover:bg-accent-blue/25 transition-colors"
       >
-        {copied ? '&#x2713; Copied!' : '&#x1F4CB; Copy Link'}
+        {copied ? '\u2713 Copied!' : '\u{1F4CB} Copy Link'}
       </button>
     </div>
   );
