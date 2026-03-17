@@ -1,6 +1,6 @@
 import { useModel, useScenarios } from '../../context/ModelContext';
 import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
+import { exportTearSheet } from '../../lib/pdf-tearsheet';
 
 export function Export() {
   const { model, outputs } = useModel();
@@ -109,98 +109,7 @@ export function Export() {
   };
 
   const exportPDF = () => {
-    const doc = new jsPDF('landscape', 'mm', 'a4');
-    const w = doc.internal.pageSize.getWidth();
-    const ret = outputs.returns;
-
-    // Title
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text(model.deal.companyName, 14, 15);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`LBO Deal Tear Sheet  |  ${model.deal.sector}  |  ${model.deal.dealDate}`, 14, 22);
-
-    // Line
-    doc.setDrawColor(100);
-    doc.line(14, 25, w - 14, 25);
-
-    let y = 32;
-
-    // Deal Summary
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Deal Summary', 14, y);
-    y += 6;
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-
-    const summaryItems = [
-      [`Enterprise Value: ${cs}${outputs.sourcesUses.purchasePrice.toFixed(1)}m`, `Entry Multiple: ${model.deal.entryMultiple.toFixed(1)}x`],
-      [`Total Debt: ${cs}${outputs.sourcesUses.totalDebt.toFixed(1)}m`, `Exit Multiple: ${model.deal.exitMultiple.toFixed(1)}x`],
-      [`Sponsor Equity: ${cs}${outputs.sourcesUses.sponsorEquity.toFixed(1)}m`, `Hold Period: ${model.deal.holdPeriod} years`],
-      [`Entry EBITDA: ${cs}${model.deal.entryEBITDA.toFixed(1)}m`, `Revenue CAGR: ${model.deal.revenueCAGR.toFixed(1)}%`],
-      [`EBITDA Margin: ${model.deal.entryEBITDAMargin.toFixed(1)}% → ${model.deal.exitEBITDAMargin.toFixed(1)}%`, ''],
-    ];
-
-    summaryItems.forEach(([left, right]) => {
-      doc.text(left, 14, y);
-      doc.text(right, w / 2, y);
-      y += 5;
-    });
-
-    y += 4;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('Returns', 14, y);
-    y += 6;
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-
-    // Returns table
-    const retHeaders = ['', 'Sponsor', 'Management', 'Total'];
-    const retRows = [
-      ['MoM', `${ret.sponsor.mom.toFixed(2)}x`, `${ret.management.mom.toFixed(2)}x`, `${ret.total.mom.toFixed(2)}x`],
-      ['IRR', `${ret.sponsor.irr.toFixed(1)}%`, `${ret.management.irr.toFixed(1)}%`, `${ret.total.irr.toFixed(1)}%`],
-      ['Equity Invested', `${cs}${ret.sponsor.equityInvested.toFixed(1)}m`, `${cs}${ret.management.equityInvested.toFixed(1)}m`, `${cs}${ret.total.equityInvested.toFixed(1)}m`],
-      ['Equity Returned', `${cs}${ret.sponsor.equityReturned.toFixed(1)}m`, `${cs}${ret.management.equityReturned.toFixed(1)}m`, `${cs}${ret.total.equityReturned.toFixed(1)}m`],
-    ];
-
-    doc.setFont('helvetica', 'bold');
-    retHeaders.forEach((h, i) => doc.text(h, 14 + i * 50, y));
-    y += 4;
-    doc.setFont('helvetica', 'normal');
-    retRows.forEach(row => {
-      row.forEach((cell, i) => doc.text(cell, 14 + i * 50, y));
-      y += 4;
-    });
-
-    y += 4;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('Exit Waterfall', 14, y);
-    y += 6;
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-
-    const wfItems = [
-      ['Exit EV', `${cs}${outputs.exitWaterfall.exitEV.toFixed(1)}m`],
-      ['Net Debt at Exit', `${cs}${outputs.exitWaterfall.netDebtAtExit.toFixed(1)}m`],
-      ['Exit Equity Value', `${cs}${outputs.exitWaterfall.exitEquityValue.toFixed(1)}m`],
-      ['Sponsor Proceeds', `${cs}${outputs.exitWaterfall.sponsorProceeds.toFixed(1)}m`],
-    ];
-    wfItems.forEach(([label, val]) => {
-      doc.text(label, 14, y);
-      doc.text(val, 80, y);
-      y += 5;
-    });
-
-    // Footer
-    doc.setFontSize(7);
-    doc.setTextColor(150);
-    doc.text(`Generated on ${new Date().toLocaleDateString()} — LBO Model`, 14, doc.internal.pageSize.getHeight() - 8);
-
-    doc.save(`${model.deal.companyName.replace(/\s+/g, '_')}_Tear_Sheet.pdf`);
+    exportTearSheet(model, outputs);
   };
 
   const copyReturns = () => {
@@ -235,7 +144,7 @@ export function Export() {
         />
         <ExportCard
           title="PDF Tear Sheet"
-          description="One-page deal summary with key metrics: returns, exit waterfall, and deal parameters."
+          description="2-page client-ready tear sheet: returns hero, capital structure, Revenue & EBITDA charts, debt paydown, IRR sensitivity heatmap, and full projections."
           buttonText="Download .pdf"
           icon="↓"
           onClick={exportPDF}
